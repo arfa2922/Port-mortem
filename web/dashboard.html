@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>semver-rs — verification dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --dim: #8b949e;
+    --accent: #58a6ff;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 2rem 1rem 3rem;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin-bottom: 0.2rem; }
+  .sub { color: var(--dim); margin-bottom: 2rem; font-size: 0.9rem; }
+  .sub a { color: var(--accent); }
+
+  .headline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat .n { font-size: 1.6rem; font-weight: 700; color: var(--ok); font-family: var(--mono); }
+  .stat .l { font-size: 0.75rem; color: var(--dim); margin-top: 0.3rem; }
+
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  h2 {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--dim);
+    margin: 0 0 1rem 0;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); }
+  th { color: var(--dim); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+  td.num { font-family: var(--mono); text-align: right; }
+  .pass { color: var(--ok); }
+  .note { color: var(--dim); font-size: 0.85rem; margin-top: 0.8rem; }
+  code { font-family: var(--mono); background: #010409; padding: 0.1rem 0.35rem; border-radius: 4px; }
+  a { color: var(--accent); }
+  .bug {
+    border-left: 3px solid var(--warn);
+    padding: 0.6rem 0.9rem;
+    background: #010409;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+  }
+  .bug .title { color: var(--warn); font-weight: 600; margin-bottom: 0.3rem; }
+  footer { color: var(--dim); font-size: 0.8rem; text-align: center; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>semver-rs — verification dashboard</h1>
+  <p class="sub">
+    Every number below is pulled from this repository's own committed
+    artifacts — <code>tests/fixtures.json</code>, <code>fuzz/log.txt</code>,
+    <code>bench/results.json</code>, <code>UPSTREAM_BUG.md</code> — not
+    computed by this page. Regenerate any of them with the commands in
+    <a href="../README.md">README.md</a>.
+  </p>
+
+  <div class="headline">
+    <div class="stat"><div class="n">2,515</div><div class="l">fixture assertions</div></div>
+    <div class="stat"><div class="n">41/41</div><div class="l">exports ported</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">unsafe blocks</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">upstream bugs found</div></div>
+    <div class="stat"><div class="n">8.0×</div><div class="l">faster than original</div></div>
+  </div>
+
+  <section>
+    <h2>Fixture parity — the original's own test data</h2>
+    <table>
+      <tr><th>fixture group</th><th class="num">result</th></tr>
+      <tr><td>valid-versions</td><td class="num pass">139 / 139</td></tr>
+      <tr><td>invalid-versions</td><td class="num pass">7 / 7</td></tr>
+      <tr><td>comparisons</td><td class="num pass">93 / 93</td></tr>
+      <tr><td>equality</td><td class="num pass">74 / 74</td></tr>
+      <tr><td>increments</td><td class="num pass">133 / 133</td></tr>
+      <tr><td>range-parse</td><td class="num pass">133 / 133</td></tr>
+      <tr><td>range-include</td><td class="num pass">126 / 126</td></tr>
+      <tr><td>range-exclude</td><td class="num pass">97 / 97</td></tr>
+      <tr><td>comparator-intersection</td><td class="num pass">34 / 34</td></tr>
+      <tr><td>range-intersection</td><td class="num pass">54 / 54</td></tr>
+      <tr><td>truncations</td><td class="num pass">27 / 27</td></tr>
+      <tr><td>ordering is a total order <span style="color:var(--dim)">(property, not in original)</span></td><td class="num pass">1,406 / 1,406</td></tr>
+      <tr><td>canonical form round-trips <span style="color:var(--dim)">(property, not in original)</span></td><td class="num pass">192 / 192</td></tr>
+    </table>
+    <p class="note">Reproduce: <code>cargo test --test fixtures -- --nocapture</code></p>
+  </section>
+
+  <section>
+    <h2>Differential fuzzing — the original as a live oracle</h2>
+    <table>
+      <tr><th>run</th><th class="num">cases</th><th class="num">divergences</th></tr>
+      <tr><td>version-level (no range syntax), 10 seeds</td><td class="num">500,000</td><td class="num pass">0</td></tr>
+      <tr><td>range-level, multi-seed aggregate</td><td class="num">500,000</td><td class="num">37 (0.0074%)</td></tr>
+      <tr><td>range-level, 60s continuous (Fuzz Survivor bonus)</td><td class="num">1,114,000</td><td class="num">87 (0.0078%)</td></tr>
+    </table>
+    <p class="note">
+      Every range-level divergence is on adversarial input no human
+      writes by hand — see <code>DECISIONS.md</code> §7, §14, §15 for
+      the full list of what was found and fixed (16 total), and what
+      two small gaps remain, documented rather than hidden.
+      Reproduce: <code>cargo run --release --bin fuzz-harness -- --seconds 60 --seed 20260731</code>
+    </p>
+  </section>
+
+  <section>
+    <h2>Upstream bugs found</h2>
+    <div class="bug">
+      <div class="title">simplifyRange("" on no match) — filed</div>
+      When no version satisfies a range, <code>simplifyRange</code> returns
+      <code>""</code> — which parses as <code>*</code>, matching everything.
+      A range that matched nothing silently becomes one that matches
+      everything. Root cause and suggested patch in
+      <a href="../UPSTREAM_BUG.md">UPSTREAM_BUG.md</a>.
+    </div>
+    <div class="bug">
+      <div class="title">gtr / ltr both return true — filed</div>
+      For a prerelease excluded by the prerelease rule rather than by a
+      range's bounds, both <code>gtr()</code> and <code>ltr()</code>
+      report <code>true</code> — a version reported as simultaneously
+      above and below the same range. Also in
+      <a href="../UPSTREAM_BUG.md">UPSTREAM_BUG.md</a>.
+    </div>
+  </section>
+
+  <section>
+    <h2>Performance</h2>
+    <table>
+      <tr><th></th><th class="num">semver-rs</th><th class="num">node-semver</th></tr>
+      <tr><td>sustained parse throughput</td><td class="num pass">11,377,569/sec</td><td class="num">1,420,866/sec</td></tr>
+      <tr><td>parse, simple version (p50)</td><td class="num pass">77 ns</td><td class="num">—</td></tr>
+      <tr><td>parse, with prerelease (p50)</td><td class="num pass">175 ns</td><td class="num">—</td></tr>
+      <tr><td>process startup (median of 5)</td><td class="num pass">2 ms</td><td class="num">41 ms</td></tr>
+    </table>
+    <p class="note">
+      Methodology, caveats, and what this does <em>not</em> claim to
+      generalize to: <a href="../bench/methodology.md">bench/methodology.md</a>.
+      Reproduce: <code>bash scripts/bench.sh</code>
+    </p>
+  </section>
+
+  <section>
+    <h2>Robustness</h2>
+    <table>
+      <tr><td>hostile API inputs tried</td><td class="num pass">47, 0 panics</td></tr>
+      <tr><td>timing-safety shapes tried</td><td class="num pass">12, all within budget</td></tr>
+      <tr><td>mutation testing (hand-curated, not automated)</td><td class="num pass">4 / 4 caught</td></tr>
+      <tr><td>quadratic-DoS fix (5,000-alternative range)</td><td class="num pass">4.4s → 12ms (343×)</td></tr>
+    </table>
+    <p class="note">Reproduce: <code>cargo run --release --example api_stress</code> and <code>cargo run --release --example timing_safety</code></p>
+  </section>
+
+  <footer>
+    Track H, Port Mortem 2026 — Rust port of
+    <a href="https://github.com/npm/node-semver">npm/node-semver</a> —
+    full source and every number's reproduction command in the repo root.
+  </footer>
+</main>
+</body>
+</html>

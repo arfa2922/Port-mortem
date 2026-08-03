@@ -1,0 +1,18 @@
+[package]
+name = "semver-rs-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "WASM bindings for semver-rs, used only by web/demo.html"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+semver-rs = { path = "../.." }
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
+[profile.release]
+opt-level = "s"
+lto = true

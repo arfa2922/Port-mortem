@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>semver-rs — live demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --dim: #8b949e;
+    --accent: #58a6ff;
+    --ok: #3fb950;
+    --bad: #f85149;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 2rem 1rem;
+    line-height: 1.5;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.25rem;
+  }
+  .sub {
+    color: var(--dim);
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+  }
+  .sub code { font-family: var(--mono); }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  h2 {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--dim);
+    margin: 0 0 0.9rem 0;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--dim);
+    margin-bottom: 0.3rem;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: #010409;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 6px;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; align-items: flex-end; }
+  .row > div { flex: 1; }
+  .flags { display: flex; gap: 1.2rem; margin: 0.6rem 0 0.9rem; font-size: 0.85rem; color: var(--dim); }
+  .flags label { display: flex; align-items: center; gap: 0.4rem; margin: 0; }
+  .result {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 6px;
+    background: #010409;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 1.3em;
+  }
+  .result.ok { border-color: var(--ok); color: var(--ok); }
+  .result.bad { border-color: var(--bad); color: var(--bad); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; }
+  .grid > div {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  .grid .k { color: var(--dim); font-size: 0.75rem; text-transform: uppercase; }
+  .grid .v { font-family: var(--mono); color: var(--text); }
+  footer {
+    color: var(--dim);
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+  footer a { color: var(--accent); }
+  #status {
+    font-size: 0.85rem;
+    color: var(--dim);
+    margin-bottom: 1rem;
+  }
+  #status.err { color: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1>semver-rs — live demo</h1>
+  <p class="sub">
+    Every result on this page comes from the actual compiled Rust port,
+    running as WebAssembly — not a JavaScript re-implementation.
+    Compare against <a href="https://semver.npmjs.com/" target="_blank" style="color:var(--accent)">npm's own semver checker</a>
+    for the same inputs.
+  </p>
+
+  <div id="status">Loading WASM module…</div>
+
+  <section>
+    <h2>Parse &amp; inspect</h2>
+    <label for="parse-input">Version string</label>
+    <input type="text" id="parse-input" value="1.2.3-beta.11+build.2026" />
+    <div class="flags">
+      <label><input type="checkbox" id="parse-loose" /> loose</label>
+    </div>
+    <div id="parse-result" class="grid" style="margin-top:0.6rem;"></div>
+  </section>
+
+  <section>
+    <h2>Compare two versions</h2>
+    <div class="row">
+      <div>
+        <label for="cmp-a">Version A</label>
+        <input type="text" id="cmp-a" value="1.2.3" />
+      </div>
+      <div>
+        <label for="cmp-b">Version B</label>
+        <input type="text" id="cmp-b" value="1.10.0" />
+      </div>
+    </div>
+    <div id="cmp-result" class="result"></div>
+  </section>
+
+  <section>
+    <h2>Range check (satisfies)</h2>
+    <div class="row">
+      <div>
+        <label for="sat-version">Version</label>
+        <input type="text" id="sat-version" value="1.2.8" />
+      </div>
+      <div>
+        <label for="sat-range">Range</label>
+        <input type="text" id="sat-range" value="^1.2.3" />
+      </div>
+    </div>
+    <div class="flags">
+      <label><input type="checkbox" id="sat-loose" /> loose</label>
+      <label><input type="checkbox" id="sat-ip" /> includePrerelease</label>
+    </div>
+    <div id="sat-result" class="result"></div>
+  </section>
+
+  <section>
+    <h2>Range desugaring (validRange)</h2>
+    <label for="range-input">Range expression</label>
+    <input type="text" id="range-input" value="~1.2.3 || >=2.0.0 <3.0.0" />
+    <div id="range-result" class="result" style="margin-top:0.6rem;"></div>
+  </section>
+
+  <section>
+    <h2>Increment (inc)</h2>
+    <div class="row">
+      <div>
+        <label for="inc-version">Version</label>
+        <input type="text" id="inc-version" value="1.2.3" />
+      </div>
+      <div>
+        <label for="inc-release">Release kind</label>
+        <select id="inc-release" style="width:100%; background:#010409; color:var(--text); border:1px solid var(--border); border-radius:6px; padding:0.5rem;">
+          <option>major</option>
+          <option>minor</option>
+          <option selected>patch</option>
+          <option>premajor</option>
+          <option>preminor</option>
+          <option>prepatch</option>
+          <option>prerelease</option>
+        </select>
+      </div>
+    </div>
+    <div id="inc-result" class="result"></div>
+  </section>
+
+  <footer>
+    <span id="version-footer">semver-rs</span> —
+    <a href="https://github.com/npm/node-semver" target="_blank">port of npm/node-semver</a> —
+    Track H, Port Mortem 2026 —
+    zero unsafe, 2,515 fixture assertions, 500,000+ differential cases
+  </footer>
+</main>
+
+<script type="module">
+  import init, {
+    valid, compare, satisfies, validRange, inc, inspect, portVersion,
+  } from './pkg/semver_rs_wasm.js';
+
+  const status = document.getElementById('status');
+
+  async function main() {
+    try {
+      await init();
+      status.textContent = '';
+      status.style.display = 'none';
+      document.getElementById('version-footer').textContent =
+        `semver-rs v${portVersion()}`;
+    } catch (e) {
+      status.textContent =
+        'Failed to load the WASM module. Run build-wasm.sh first, ' +
+        'then open this file (or serve web/) — see README in web/.';
+      status.classList.add('err');
+      console.error(e);
+      return;
+    }
+    wire();
+    runAll();
+  }
+
+  function wire() {
+    for (const id of [
+      'parse-input', 'parse-loose', 'cmp-a', 'cmp-b',
+      'sat-version', 'sat-range', 'sat-loose', 'sat-ip',
+      'range-input', 'inc-version', 'inc-release',
+    ]) {
+      document.getElementById(id).addEventListener('input', runAll);
+      document.getElementById(id).addEventListener('change', runAll);
+    }
+  }
+
+  function runAll() {
+    runParse();
+    runCompare();
+    runSatisfies();
+    runRange();
+    runInc();
+  }
+
+  function runParse() {
+    const v = document.getElementById('parse-input').value;
+    const loose = document.getElementById('parse-loose').checked;
+    const out = document.getElementById('parse-result');
+    const info = inspect(v, loose);
+    if (info === undefined) {
+      out.innerHTML = `<div style="grid-column:1/-1;color:var(--bad)">invalid version</div>`;
+      return;
+    }
+    const cell = (k, v) => `<div><div class="k">${k}</div><div class="v">${v}</div></div>`;
+    out.innerHTML =
+      cell('canonical', info.version) +
+      cell('major', info.major) +
+      cell('minor', info.minor) +
+      cell('patch', info.patch) +
+      cell('prerelease', info.prerelease.length ? info.prerelease.join('.') : '(none)') +
+      cell('build', info.build.length ? info.build.join('.') : '(none)');
+  }
+
+  function runCompare() {
+    const a = document.getElementById('cmp-a').value;
+    const b = document.getElementById('cmp-b').value;
+    const out = document.getElementById('cmp-result');
+    const result = compare(a, b, false);
+    if (result === undefined) {
+      out.textContent = 'invalid input';
+      out.className = 'result bad';
+      return;
+    }
+    const rel = result < 0 ? '<' : result > 0 ? '>' : '=';
+    out.textContent = `${a} ${rel} ${b}   (compare() = ${result})`;
+    out.className = 'result ok';
+  }
+
+  function runSatisfies() {
+    const v = document.getElementById('sat-version').value;
+    const r = document.getElementById('sat-range').value;
+    const loose = document.getElementById('sat-loose').checked;
+    const ip = document.getElementById('sat-ip').checked;
+    const out = document.getElementById('sat-result');
+    const ok = satisfies(v, r, loose, ip);
+    out.textContent = `${v} ${ok ? 'satisfies' : 'does NOT satisfy'} ${r}`;
+    out.className = 'result ' + (ok ? 'ok' : 'bad');
+  }
+
+  function runRange() {
+    const r = document.getElementById('range-input').value;
+    const out = document.getElementById('range-result');
+    const desugared = validRange(r, false, false);
+    if (desugared === undefined) {
+      out.textContent = 'invalid range';
+      out.className = 'result bad';
+      return;
+    }
+    out.textContent = desugared;
+    out.className = 'result ok';
+  }
+
+  function runInc() {
+    const v = document.getElementById('inc-version').value;
+    const rel = document.getElementById('inc-release').value;
+    const out = document.getElementById('inc-result');
+    const result = inc(v, rel, false);
+    if (result === undefined) {
+      out.textContent = 'invalid input or release kind';
+      out.className = 'result bad';
+      return;
+    }
+    out.textContent = `inc("${v}", "${rel}") = ${result}`;
+    out.className = 'result ok';
+  }
+
+  main();
+</script>
+</body>
+</html>
