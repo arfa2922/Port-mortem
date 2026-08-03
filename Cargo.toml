@@ -1,0 +1,31 @@
+[package]
+name = "semver-rs"
+version = "0.1.0"
+edition = "2021"
+description = "SemVer parsing in safe Rust — Track F port of npm/node-semver"
+license = "MIT"
+
+[[bin]]
+name = "semver-rs"
+path = "src/main.rs"
+
+[lib]
+name = "semver_rs"
+path = "src/lib.rs"
+
+[dependencies]
+thiserror = "1"
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+proptest = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[[bin]]
+name = "fuzz-harness"
+path = "fuzz/harness.rs"
