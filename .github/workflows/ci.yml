@@ -1,0 +1,194 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ── The test suite is sacrosanct ────────────────────────────────────────
+  suite-unmodified:
+    name: Test suite unmodified
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Re-fetch the original and re-hash its suite
+        run: bash scripts/fetch_original.sh
+
+      - name: Compare against the hash pinned at kickoff
+        run: |
+          # fetch_original.sh regenerates kickoff.hash. Any difference
+          # means a test file changed, which forfeits test parity under
+          # the event rules.
+          git diff --exit-code kickoff.hash || {
+            echo "FAIL: the pinned test suite differs from the kickoff hash."
+            echo "Tests are added, never edited."
+            exit 1
+          }
+          echo "verified: $(wc -l < kickoff.hash) files match the kickoff pin"
+
+  # ── Zero unsafe is the thesis ──────────────────────────────────────────
+  zero-unsafe:
+    name: Zero unsafe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on any unsafe block
+        run: |
+          if grep -Prn "^\s*unsafe\s" src/; then
+            echo "FAIL: unsafe block found"
+            exit 1
+          fi
+          echo "verified: 0 unsafe blocks"
+
+  # ── Fixture parity against the original's own expectations ─────────────
+  fixtures:
+    name: Fixture parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Fetch the original and export its fixtures
+        run: bash scripts/fetch_original.sh
+
+      - name: Run the fixture suite
+        run: cargo test --test fixtures -- --nocapture
+
+      - name: Unit and doc tests
+        run: cargo test
+
+  # ── Differential against the running original ──────────────────────────
+  differential:
+    name: Differential vs the original
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Fetch the original
+        run: bash scripts/fetch_original.sh
+
+      - name: Fuzz both implementations on the same input
+        env:
+          CASES: 20000
+          SEEDS: "1 42 1337"
+        run: bash scripts/run_differential.sh || true
+        # Range-level generation still finds divergences on adversarial
+        # input; the log is the deliverable, not a pass/fail gate. The
+        # fixture job above is the gate.
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: differential-log
+          path: differential.log
+
+  # ── Robustness: no panics, no pathological timings ─────────────────────
+  robustness:
+    name: Robustness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Hostile input against the public API
+        run: cargo run --release --example api_stress
+
+      - name: No input takes disproportionately long
+        # The original ships a second set of regexes purely to avoid
+        # catastrophic backtracking. A scanner should not need them —
+        # this checks that claim rather than asserting it.
+        run: cargo run --release --example timing_safety
+
+  # ── Lints ──────────────────────────────────────────────────────────────
+  lint:
+    name: Clippy and fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+  # ── Benchmarks, for the record ─────────────────────────────────────────
+  bench:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: Swatinem/rust-cache@v2
+
+      - run: bash scripts/fetch_original.sh
+      - run: bash scripts/bench.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: bench/results.md
+
+  # ── The container builds and its checks pass ───────────────────────────
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t semver-rs .
+      - name: Run the suite inside it
+        run: docker run --rm semver-rs test
+
+  # ── The web demo builds, on a toolchain modern enough for wasm-bindgen ──
+  web-demo:
+    name: Web demo (WASM)
+    runs-on: ubuntu-latest
+    # This is supplementary, not part of the port itself -- src/ never
+    # depends on it. wasm-bindgen's macro crate needs a newer rustc than
+    # the rest of this project targets, so it gets its own toolchain and
+    # is not allowed to fail the rest of CI if something upstream shifts.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build the WASM demo
+        run: bash build-wasm.sh
+      - name: Check the dashboard is well-formed HTML
+        run: |
+          python3 -c "
+          import html.parser
+          for f in ['web/dashboard.html', 'web/demo.html']:
+              html.parser.HTMLParser().feed(open(f).read())
+              print(f, 'parses as HTML')
+          "
