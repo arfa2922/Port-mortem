@@ -1,0 +1,84 @@
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   20260731  (replay with --seed 20260731)
+  mode:   continuous, 60s wall-clock budget
+
+     5.0s,    74000 cases, 3 divergences
+    10.1s,   148000 cases, 5 divergences
+    15.1s,   224000 cases, 10 divergences
+    20.2s,   302000 cases, 15 divergences
+    25.2s,   380000 cases, 21 divergences
+    30.2s,   458000 cases, 25 divergences
+    35.3s,   538000 cases, 28 divergences
+    40.4s,   622000 cases, 34 divergences
+    45.5s,   694000 cases, 36 divergences
+    50.5s,   768000 cases, 39 divergences
+    55.6s,   850000 cases, 43 divergences
+
+── Results ──────────────────────────────────────────────
+  cases:       922000
+  duration:    60.1s
+  throughput:  15333 cases/s
+  divergences: 47
+
+── Divergences (first 20) ───────────────────────────────
+  validRange("^00.9007199254740991.558+0.0 || ~0 ~>7.5.422 || <=*", loose=true, ip=false)
+    ours:     Null(None)
+    original: Str("*")
+  validRange("<=206217.x || 356.67.7+001 - =509663.0.0 || ~>*", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("*")
+  validRange("1.x || 0.9007199254740991 - =21.9.4294967295+001", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=1.0.0-0 <2.0.0-0||>=0.9007199254740991.0-0 <21.9.4294967296-0")
+  validRange("1 - =499575.9.1+20260731", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=1.0.0-0 <499575.9.2-0")
+  validRange("591426.794.55 - =0.4294967295.1 || <=*", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("*")
+  validRange("^00.010.x", loose=true, ip=false)
+    ours:     Str(">=0.10.0 <0.11.0-0")
+    original: Str(">=0.10.0 <1.0.0-0")
+  validRange("9007199254740991.x - =625745.178.12", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=9007199254740991.0.0-0 <625745.178.13-0")
+  validRange(">=00 ^790 || >0.x ^0 || <9007199254740991.x", loose=true, ip=false)
+    ours:     Str(">=790.0.0 <791.0.0-0||>=1.0.0 <1.0.0-0||<9007199254740991.0.0-0")
+    original: Str(">=0.0.0 >=790.0.0 <791.0.0-0||>=1.0.0 <1.0.0-0||<9007199254740991.0.0-0")
+  validRange("83228.351.x - =376.87.4294967295", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=83228.351.0-0 <376.87.4294967296-0")
+  validRange(">=* || 66.1.x - =13.9007199254740991.9+001.001", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("*")
+  validRange("=4.x || =946.82.4294967295-rc || ^00.0.x", loose=true, ip=false)
+    ours:     Str(">=4.0.0 <5.0.0-0||946.82.4294967295-rc||>=0.0.0 <0.1.0-0")
+    original: Str(">=4.0.0 <5.0.0-0||946.82.4294967295-rc||>=0.0.0 <1.0.0-0")
+  validRange("0.0.x - =630.565956.4294967295", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("<630.565956.4294967296-0")
+  validRange("0.00 || 8 <134.x", loose=true, ip=false)
+    ours:     Str("<0.1.0-0||>=8.0.0 <9.0.0-0 <134.0.0-0")
+    original: Str(">=0.0.0 <0.1.0-0||>=8.0.0 <9.0.0-0 <134.0.0-0")
+  validRange("=9007199254740991.252 || 589.0 - =9.0.964357 || <=* <=*", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("*")
+  validRange("^63.x || >=0 ^00.22.077-2.pre", loose=true, ip=true)
+    ours:     Str(">=63.0.0-0 <64.0.0-0||>=0.22.77-2.pre <0.23.0-0")
+    original: Str(">=63.0.0-0 <64.0.0-0||>=0.22.77-2.pre <1.0.0-0")
+  validRange("< 0.9007199254740991.21-0a.0a+a-b.001  ~4294967295 || * - 858357.4294967295.7 >=0.00", loose=true, ip=false)
+    ours:     Str("<0.9007199254740991.21-0a.0a >=4294967295.0.0 <4294967296.0.0-0||858357.4294967295.7")
+    original: Str("<0.9007199254740991.21-0a.0a >=4294967295.0.0 <4294967296.0.0-0||858357.4294967295.7 >=0.0.0")
+  validRange("9007199254740991.x - =624270.0.9 || >590.x <9007199254740991.55.x", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=9007199254740991.0.0-0 <624270.0.10-0||>=591.0.0-0 <9007199254740991.55.0-0")
+  validRange("~>4.1.x <=1.1 || 911578.1.x - =213239.9007199254740991.78+deadbeef.deadbeef || ~>4294967295.645736.4294967295", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=4.1.0-0 <4.2.0-0 <1.2.0-0||>=911578.1.0-0 <213239.9007199254740991.79-0||>=4294967295.645736.4294967295 <4294967295.645737.0-0")
+  validRange(">=00 ~4294967295.x", loose=true, ip=false)
+    ours:     Str(">=4294967295.0.0 <4294967296.0.0-0")
+    original: Str(">=0.0.0 >=4294967295.0.0 <4294967296.0.0-0")
+  validRange("9007199254740991.720 - =0.9007199254740991.9007199254740991+a-b || >=1.x <=0.x || ~4294967295.0.x", loose=false, ip=false)
+    ours:     Str(">=9007199254740991.720.0 <=0.9007199254740991.9007199254740991||>=1.0.0 <1.0.0-0||>=4294967295.0.0 <4294967295.1.0-0")
+    original: Null(None)

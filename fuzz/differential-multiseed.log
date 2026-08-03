@@ -1,0 +1,217 @@
+semver-rs differential session
+rustc:  rustc 1.75.0 (built from a source tarball)
+node:   v22.22.2
+oracle: vendor/node-semver, run live
+cases:  50000 per seed
+seeds:  1 7 42 99 555 1337 2026 8888 31337 99999
+
+Both implementations receive the same generated input; any
+disagreement is a real behavioural divergence, not a guess.
+==================================================================
+
+=== seed 1 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   1  (replay with --seed 1)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.2s
+  throughput:  15804 cases/s
+  divergences: 2
+
+── Divergences (first 2) ───────────────────────────────
+  validRange("4294967295.65.9007199254740991+a-b.sha - =0.0.4294967295", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=4294967295.65.9007199254740991-0 <0.0.4294967296-0")
+  validRange("1 - =1.1.75+a-b.deadbeef", loose=false, ip=false)
+    ours:     Str(">=1.0.0 <=1.1.75")
+    original: Null(None)
+
+=== seed 7 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   7  (replay with --seed 7)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.2s
+  throughput:  15825 cases/s
+  divergences: 2
+
+── Divergences (first 2) ───────────────────────────────
+  validRange("* - =1.862.831+sha.a-b || =1.x || >1.x ^1.x", loose=false, ip=false)
+    ours:     Str("<=1.862.831||>=1.0.0 <2.0.0-0||>=2.0.0 >=1.0.0 <2.0.0-0")
+    original: Null(None)
+  validRange("359 - =88.141060.173006 || <=4294967295 >=945510", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=359.0.0-0 <88.141060.173007-0||<4294967296.0.0-0 >=945510.0.0-0")
+
+=== seed 42 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   42  (replay with --seed 42)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.1s
+  throughput:  16169 cases/s
+  divergences: 0
+
+  The port and the original agreed on every case.
+
+=== seed 99 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   99  (replay with --seed 99)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.1s
+  throughput:  16302 cases/s
+  divergences: 2
+
+── Divergences (first 2) ───────────────────────────────
+  validRange("4294967295.9007199254740991 - =521072.3.1+001 || * || 0.x - 9007199254740991.1.354-0a+0.build", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("*")
+  validRange("* - =587.2.1", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("<587.2.2-0")
+
+=== seed 555 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   555  (replay with --seed 555)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.3s
+  throughput:  15319 cases/s
+  divergences: 2
+
+── Divergences (first 2) ───────────────────────────────
+  validRange("0.x - =890.4294967295.80+x.0 || ~>1.4294967295 || <=* <=1.4294967295", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("<890.4294967295.81-0||>=1.4294967295.0-0 <1.4294967296.0-0||<1.4294967296.0-0")
+  satisfies("0.1.9007199254740991", "0.1 - =60.1.9 || =* >=9.2.x", loose=false, ip=true)
+    ours:     Bool(false)
+    original: Bool(true)
+
+=== seed 1337 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   1337  (replay with --seed 1337)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.1s
+  throughput:  16137 cases/s
+  divergences: 3
+
+── Divergences (first 3) ───────────────────────────────
+  validRange("* - =0.27.1", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("<0.27.2-0")
+  satisfies("5.0.1+x.deadbeef", "* - =4294967295.6.114119 || ~997 >=4294967295", loose=false, ip=true)
+    ours:     Bool(false)
+    original: Bool(true)
+  validRange("66.9007199254740991.8 <=1 || ~0.00.x * - 16.1.4-rc+0.x", loose=true, ip=false)
+    ours:     Str("66.9007199254740991.8 <2.0.0-0||<0.1.0-0 16.1.4-rc")
+    original: Str("66.9007199254740991.8 <2.0.0-0||>=0.0.0 <0.1.0-0 16.1.4-rc")
+
+=== seed 2026 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   2026  (replay with --seed 2026)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.1s
+  throughput:  16338 cases/s
+  divergences: 1
+
+── Divergences (first 1) ───────────────────────────────
+  validRange(">0.x ~>5.2.x || 0.x || ^00.331", loose=true, ip=false)
+    ours:     Str(">=1.0.0 >=5.2.0 <5.3.0-0||<1.0.0-0||>=0.331.0 <0.332.0-0")
+    original: Str(">=1.0.0 >=5.2.0 <5.3.0-0||<1.0.0-0||>=0.331.0 <1.0.0-0")
+
+=== seed 8888 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   8888  (replay with --seed 8888)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.1s
+  throughput:  16387 cases/s
+  divergences: 1
+
+── Divergences (first 1) ───────────────────────────────
+  validRange("* || * - =4294967295.3.52+build", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("*")
+
+=== seed 31337 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   31337  (replay with --seed 31337)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.0s
+  throughput:  16511 cases/s
+  divergences: 2
+
+── Divergences (first 2) ───────────────────────────────
+  validRange("4294967295.35.x - =35071.4294967295.4294967295", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str(">=4294967295.35.0-0 <35071.4294967295.4294967296-0")
+  validRange("^00.043 || ~>9007199254740991.4294967295.x || 013.1 - 1.1.730160 =0.247742", loose=true, ip=false)
+    ours:     Str(">=0.43.0 <0.44.0-0||>=9007199254740991.4294967295.0 <9007199254740991.4294967296.0-0||>=13.1.0 <13.2.0-0 1.1.730160 >=0.247742.0 <0.247743.0-0")
+    original: Str(">=0.43.0 <1.0.0-0||>=9007199254740991.4294967295.0 <9007199254740991.4294967296.0-0||>=13.1.0 <13.2.0-0 1.1.730160 >=0.247742.0 <0.247743.0-0")
+
+=== seed 99999 ===
+semver-rs differential fuzzer
+  oracle: vendor/node-semver via node
+  seed:   99999  (replay with --seed 99999)
+  cases:  50000
+
+
+── Results ──────────────────────────────────────────────
+  cases:       50000
+  duration:    3.1s
+  throughput:  16090 cases/s
+  divergences: 3
+
+── Divergences (first 3) ───────────────────────────────
+  validRange(">=5.x 523.322365.3+0 || ^00.9007199254740991 113.1.x || >=938109.1.x", loose=true, ip=false)
+    ours:     Null(None)
+    original: Str(">=5.0.0 523.322365.3||>=0.9007199254740991.0 <1.0.0-0 >=113.1.0 <113.2.0-0||>=938109.1.0")
+  validRange("* - =0.326955.0 || >7", loose=false, ip=true)
+    ours:     Null(None)
+    original: Str("<0.326955.1-0||>=8.0.0-0")
+  validRange("~>7.x =677.x || >=00.x ~>360", loose=true, ip=true)
+    ours:     Str(">=7.0.0-0 <8.0.0-0 >=677.0.0-0 <678.0.0-0||>=360.0.0-0 <361.0.0-0")
+    original: Str(">=7.0.0-0 <8.0.0-0 >=677.0.0-0 <678.0.0-0||>=0.0.0-0 >=360.0.0-0 <361.0.0-0")
+
+==================================================================
+total cases: 500000
