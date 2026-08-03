@@ -1,0 +1,100 @@
+{
+  "profile": "release (opt-level=3, lto=true, codegen-units=1)",
+  "parsing_ns": {
+    "simple_version": {
+      "p50": 77,
+      "p99": 122,
+      "mean": 83,
+      "min": 73
+    },
+    "with_prerelease_and_build": {
+      "p50": 175,
+      "p99": 334,
+      "mean": 191,
+      "min": 167
+    },
+    "invalid_input": {
+      "p50": 52,
+      "p99": 83,
+      "mean": 55,
+      "min": 49
+    },
+    "twenty_identifier_prerelease": {
+      "p50": 899,
+      "p99": 1929,
+      "mean": 976,
+      "min": 840
+    }
+  },
+  "comparison_ns": {
+    "two_parsed_versions": {
+      "p50": 41,
+      "p99": 57,
+      "mean": 43,
+      "min": 38
+    },
+    "from_strings": {
+      "p50": 205,
+      "p99": 419,
+      "mean": 230,
+      "min": 196
+    }
+  },
+  "ranges_ns": {
+    "parse_caret": {
+      "p50": 1786,
+      "p99": 5033,
+      "mean": 1978,
+      "min": 1712
+    },
+    "parse_compound_range": {
+      "p50": 3425,
+      "p99": 7491,
+      "mean": 3657,
+      "min": 3278
+    },
+    "satisfies": {
+      "p50": 1457,
+      "p99": 3130,
+      "mean": 1614,
+      "min": 1400
+    }
+  },
+  "increment_ns": {
+    "inc_minor": {
+      "p50": 146,
+      "p99": 198,
+      "mean": 163,
+      "min": 142
+    }
+  },
+  "throughput": {
+    "sustained_parse_per_sec": 11377569,
+    "original_parse_per_sec": 1420866,
+    "speedup": 8.0
+  },
+  "memory": {
+    "peak_rss_kb": 6004
+  },
+  "startup_ms": {
+    "method": "wall-clock, 5 runs each, /usr/bin/time was not available in this environment so bash's own timer bracketed the process; median reported",
+    "semver_rs_median_ms": 2,
+    "semver_rs_samples_ms": [
+      2,
+      5,
+      4,
+      1,
+      1
+    ],
+    "node_semver_median_ms": 41,
+    "node_semver_samples_ms": [
+      52,
+      48,
+      39,
+      38,
+      41
+    ],
+    "speedup": 20.5,
+    "note": "This measures process launch + one call, not sustained throughput -- the number below is dominated by each runtime's own startup cost (Node initializing its VM vs a native binary), which is a fair thing to compare since it's what a caller invoking either as a subprocess actually pays."
+  }
+}
